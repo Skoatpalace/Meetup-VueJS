@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-const Meetup = require('./meetups');
+const Meetup = require('./meetups').default;
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
 const config = require('../config/dev')

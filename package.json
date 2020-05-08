@@ -25,7 +25,8 @@
     "grpc": "^1.24.2",
     "http-proxy-middleware": "^0.19.1",
     "jsonwebtoken": "^8.5.1",
-    "moment": "^2.25.1",
+    "lodash": "^4.17.15",
+    "moment": "^2.24.0",
     "mongoose": "^5.9.11",
     "morgan": "^1.10.0",
     "node-geocoder": "^3.27.0",
@@ -68,7 +69,11 @@
       "plugin:vue/essential",
       "eslint:recommended"
     ],
-    "rules": {},
+    "rules": {
+      "no-debugger": 0,
+      "no-console": 0,
+      "no-unused-vars": 0
+    },
     "parserOptions": {
       "parser": "babel-eslint"
     }

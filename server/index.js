@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
@@ -15,7 +16,7 @@ const meetupsRoutes = require('./routes/meetups'),
       postsRoutes = require('./routes/posts'),
       categoriesRoutes = require('./routes/categories');
 
-mongoose.connect(config.DB_URI, { useNewUrlParser: true })
+mongoose.connect(config.DB_URI, { useCreateIndex: true, useUnifiedTopology: true, useNewUrlParser: true })
   .then(() => console.log('DB Connected!'))
   .catch(err => console.log(err));
 
