@@ -20,7 +20,7 @@ const userSchema = new Schema({
           min: [6, 'Too short, min is 6 characters']},
   password: {
     type: String,
-    min: [4, 'Too short, min is 4 characters'],
+    min: [8, 'Too short, min is 8 characters'],
     max: [32, 'Too long, max is 32 characters'],
     required: 'Password is required'
   },
