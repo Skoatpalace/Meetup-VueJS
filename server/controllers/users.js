@@ -1,5 +1,5 @@
 const User = require('../models/users');
-const passport = require('passport')
+const passport = require('passport');
 
 exports.getUsers = function(req, res) {
   User.find({})
@@ -19,9 +19,9 @@ exports.getCurrentUser = function (req, res, next) {
   if(!user) {
     return res.sendStatus(422);
   }
-  // Only For Session Authentication !
-  // return res.json(user)
-  
+
+  // For Session Auth!
+  // return res.json(user);
   return res.json(user.toAuthJSON());
 };
 
@@ -31,7 +31,8 @@ exports.register = function(req, res) {
   if (!registerData.email) {
     return res.status(422).json({
       errors: {
-        email: 'is required'
+        email: 'is required',
+        message: 'Email is required'
       }
     })
   }
@@ -39,7 +40,8 @@ exports.register = function(req, res) {
   if (!registerData.password) {
     return res.status(422).json({
       errors: {
-        password: 'is required'
+        password: 'is required',
+        message: 'Password is required'
       }
     })
   }
@@ -47,28 +49,31 @@ exports.register = function(req, res) {
   if (registerData.password !== registerData.passwordConfirmation) {
     return res.status(422).json({
       errors: {
-        password: 'is not the same as confirmation password'
+        password: 'is not the same as confirmation password',
+        message: 'Password is not the same as confirmation password'
       }
     })
   }
 
-  const user = new User(registerData)
+  const user = new User(registerData);
 
   return user.save((errors, savedUser) => {
     if (errors) {
       return res.status(422).json({errors})
     }
+
     return res.json(savedUser)
   })
 }
 
-exports.login = function(req, res, next) {
+exports.login = function (req, res, next) {
   const { email, password } = req.body
 
   if (!email) {
     return res.status(422).json({
       errors: {
-        email: 'is required'
+        email: 'is required',
+        message: 'Email is required'
       }
     })
   }
@@ -76,32 +81,43 @@ exports.login = function(req, res, next) {
   if (!password) {
     return res.status(422).json({
       errors: {
-        password: 'is required'
+        password: 'is required',
+        message: 'Password is required'
       }
     })
   }
 
   return passport.authenticate('local', (err, passportUser) => {
-    if(err) {
+    if (err) {
       return next(err)
     }
 
-    if(passportUser) {
-      // Only For Session Authentication !
-      // req.login(passportUser, function(err) {
-      //   if(err) { next(err) }
+    if (passportUser) {
+      // Only For Session Auth!!!
+      // req.login(passportUser, function (err) {
+      //   if (err) { next(err); }
+
       //   return res.json(passportUser)
-      // })
+      // });
+
       return res.json(passportUser.toAuthJSON())
+
     } else {
       return res.status(422).send({errors: {
-        'authentication': 'Ooops, something went wrong!'
+        'message': 'Invalid password or email'
       }})
     }
+
   })(req, res, next)
 }
 
-exports.logout = function(req, res) {
-  req.logout() 
+exports.logout = function (req, res) {
+  req.logout()
   return res.json({status: 'Session destroyed!'})
 }
+
+
+
+
+
+

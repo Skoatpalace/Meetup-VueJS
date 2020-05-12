@@ -188,7 +188,13 @@ export default {
     register () {
       this.$store.dispatch("auth/registerUser", this.form)
         .then(() => this.$router.push('/login'))
-        .catch(err => console.log(err))
+        .catch(errorMessage => {
+            this.$toasted.error(errorMessage, {
+              theme: "bubble", 
+              position: "top-center", 
+              duration : 5000
+              })
+        })
     }
   }
 };

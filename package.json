@@ -72,7 +72,8 @@
     "rules": {
       "no-debugger": 0,
       "no-console": 0,
-      "no-unused-vars": 0
+      "no-unused-vars": 0,
+      "no-useless-escape": 0 
     },
     "parserOptions": {
       "parser": "babel-eslint"

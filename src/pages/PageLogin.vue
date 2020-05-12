@@ -89,18 +89,26 @@ export default {
   },
   computed: {
       isFormInvalid () {
-          return this.$v.form.$invalid 
+        return this.$v.form.$invalid
       }
-  },
-  methods: {
-    login () {
-      this.$store.dispatch("auth/loginWithEmailAndPassword", this.form)
-        .then(() => this.$router.push('/'))
-        .catch(err => console.log(err))
+    },
+    methods: {
+      login () {
+        this.$v.form.$touch()
+        this.$store.dispatch('auth/loginWithEmailAndPassword', this.form)
+          .then(() => this.$router.push('/'))
+          .catch((errorMessage) => {
+            this.$toasted.error(errorMessage, {
+              theme: "bubble", 
+              position: "top-center", 
+              duration : 5000
+              })
+          })
+      }
     }
   }
-};
 </script>
+
 
 <style scoped>
 .hero.is-success {
