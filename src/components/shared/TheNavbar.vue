@@ -38,7 +38,7 @@
 
       <div class="navbar-end">
         <div class="navbar-item">
-          <div v-if="user">Welcome {{user.username}}</div>
+          <div v-if="user">Welcome {{user.name}}</div>
         </div>
         <div v-if="user" class="navbar-item has-dropdown is-hoverable">
           <a class="navbar-link">Account</a>

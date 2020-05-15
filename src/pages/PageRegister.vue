@@ -7,7 +7,7 @@
           <p class="subtitle has-text-grey">Please register to proceed.</p>
           <div class="box">
             <figure class="avatar">
-              <img src="https://placehold.it/128x128" />
+              <img v-if="form.avatar" :src="form.avatar" alt="image" />
             </figure>
             <form>
               <div class="field">
