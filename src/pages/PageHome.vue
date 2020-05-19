@@ -38,10 +38,10 @@
 
 <script>
 import _ from "lodash";
-import CategoryItem from "@/components/CategoryItem";
-import MeetupItem from "@/components/MeetupItem";
+import CategoryItem from "@/components/CategoryItem"
+import MeetupItem from "@/components/MeetupItem"
 import pageLoader from '@/mixins/pageLoader'
-import { mapActions, mapState, mapGetters } from "vuex";
+import { mapActions, mapState, mapGetters } from "vuex"
 export default {
   components: {
     CategoryItem,

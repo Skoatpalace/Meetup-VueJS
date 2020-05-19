@@ -3,7 +3,7 @@
     <h3 class="title is-3">Threads</h3>
     <div v-for="thread in threads" :key="thread._id" class="box">
       <!-- Thread title -->
-      <h4 id="const" class="title is-3">{{thread.title}}</h4>
+      <h4 id="const" class="title is-3">{{ thread.title }}</h4>
       <PostCreate v-if="canMakePost" :threadId="thread._id"/>
       <article v-for="post in thread.posts" :key="post._id" class="media post-item">
         <figure class="media-left is-rounded user-image">
@@ -15,12 +15,12 @@
           <div class="content is-medium">
             <div class="post-content">
               <!-- Post User Name -->
-              <strong class="author">{{post.user.name}}</strong>
+              <strong class="author">{{ post.user.name }}</strong>
               {{' '}}
               <!-- Post Updated at -->
-              <small class="post-time">{{post.updatedAt | formatDate('LLL')}}</small>
+              <small class="post-time">{{ post.updatedAt | fromNow }}</small>
               <br />
-              <p class="post-content-message">{{post.text}}</p>
+              <p class="post-content-message">{{ post.text }}</p>
             </div>
           </div>
         </div>
