@@ -7,10 +7,10 @@
           <div class="level">
             <div class="level-left">
               <div class="level-item">
-                <input type="text" class="input" placeholder="New York">
+                <input v-model="searchedLocation" @keyup.enter="fetchMeetups" type="text" class="input" placeholder="New York">
               </div>
-              <div class="level-item">
-                <span>Meetups in New York, USA</span>
+              <div v-if="searchedLocation && meetups && meetups.length > 0" class="level-item">
+                <span>Meetups in {{ meetups[0].location }}</span>
               </div>
             </div>
             <div class="level-right">
@@ -25,7 +25,7 @@
     </div>
     <div class="container">
       <section class="section page-find">
-        <div class="columns cover is-multiline">
+        <div v-if="meetups && meetups.length > 0" class="columns cover is-multiline">
           <div v-for="meetup of meetups" :key="meetup._id" class="column is-one-third" :style="{'min-height': '160px'}">
             <router-link :to="'/meetups/' + meetup._id" class="meetup-card-find"
                href="#"
@@ -47,7 +47,7 @@
             </router-link>
           </div>
         </div>
-        <div>
+        <div v-else>
           <span class="tag is-warning is-large">No meetups found :( You might try to change search criteria (:</span>
         </div>
       </section>
@@ -58,15 +58,30 @@
 <script>
   import _ from 'lodash'
   export default {
+    data() {
+      return {
+        searchedLocation: this.$store.getters['meta/location'],
+        filter: {}
+      }
+    },
     created () {
-      this.$store.dispatch('meetups/fetchMeetups')
+      this.fetchMeetups()
     },
     computed: {
       meetups () {
         const meetups = this.$store.state.meetups.items
       return _.orderBy(meetups, 'startDate')
       }
-    }
+    },
+    methods: {
+      fetchMeetups () {
+        if ( this.searchedLocation) {
+          this.filter['location'] = this.searchedLocation.toLowerCase().replace(/[\s,]+/g,'').trim()
+        }
+
+        this.$store.dispatch('meetups/fetchMeetups', { filter: this.filter })
+      }
+    },
   }
 </script>
 
