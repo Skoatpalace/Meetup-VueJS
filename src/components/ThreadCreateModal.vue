@@ -55,7 +55,7 @@
           threadSubmitted () {
             const { title } = this.form
             this.$emit('threadSubmitted', { title, done: () => {
-              this.form = ''
+              this.form.title = ''
               this.isOpen = false
             }})
           }

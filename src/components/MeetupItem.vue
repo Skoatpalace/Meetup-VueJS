@@ -24,7 +24,7 @@
               <!--get meetup title -->
               <p class="title is-4 no-padding is-marginless">{{ meetup.title }}</p>
               <!--get meetup category -->
-              <span class="tag is-success">{{ meetup.category.name }}</span>
+              <span class="tag is-success is-rounded">{{ meetup.category.name }}</span>
               <!--get meetup location -->
               <p class="subtitle is-7">{{ meetup.location }}</p>
             </div>
@@ -56,5 +56,9 @@ export default {
 <style scoped>
 .card-meetup-link {
   color: black;
+}
+.tag {
+  margin-top: 5px;
+  margin-bottom: 5px;
 }
 </style>
