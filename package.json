@@ -6,7 +6,9 @@
     "preinstall": "npx npm-force-resolutions",
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "start": "npm run start --prefix server",
+    "heroku-postbuild": "npm run build"
   },
   "dependencies": {
     "algoliasearch": "^3.35.1",
@@ -31,6 +33,7 @@
     "mongoose": "^5.9.11",
     "morgan": "^1.10.0",
     "node-geocoder": "^3.27.0",
+    "nodemailer": "^6.4.6",
     "passport": "^0.4.1",
     "passport-jwt": "^4.0.0",
     "passport-local": "^1.0.0",
@@ -44,6 +47,7 @@
     "vue-toasted": "^1.1.28",
     "vue2-timepicker": "^0.2.0",
     "vuejs-datepicker": "^1.6.2",
+    "vuejs-paginate": "^2.1.0",
     "vuelidate": "^0.7.5",
     "vuex": "^3.3.0",
     "yargs-parser": "^18.1.3"

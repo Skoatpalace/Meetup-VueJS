@@ -1,6 +1,5 @@
 module.exports = function (io) {
     io.on('connection', function (socket) {
-        console.log('connection has been established');
 
         socket.on('meetup/subscribe', function (meetupId) {
             console.log('Joining meetup ', `meetup-${meetupId}`);

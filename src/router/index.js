@@ -5,6 +5,7 @@ import store from '@/store'
 import PageHome from '@/pages/PageHome'
 import PageMeetupDetail from '@/pages/PageMeetupDetail'
 import PageMeetupFind from '@/pages/PageMeetupFind'
+import PageMeetupEdit from '@/pages/PageMeetupEdit'
 import PageLogin from '@/pages/PageLogin'
 import PageRegister from '@/pages/PageRegister'
 import PageSecret from '@/pages/PageSecret'
@@ -12,6 +13,7 @@ import PageMeetupCreate from '@/pages/PageMeetupCreate'
 import PageProfile from '@/pages/PageProfile'
 import PageNotFound from '@/pages/PageNotFound'
 import PageNotAuthenticated from '@/pages/PageNotAuthenticated'
+import PageActivateUser from '@/pages/PageActivateUser'
 
 Vue.use(Router)
 
@@ -57,6 +59,13 @@ const router = new Router({
       component: PageMeetupDetail
     },
     {
+      path: '/meetups/:meetupId/edit',
+      name: 'PageMeetupEdit',
+      component: PageMeetupEdit,
+      meta: {onlyAuthUser: true},
+      props: true
+    },
+    {
       path: '/login',
       name: 'PageLogin',
       component: PageLogin,
@@ -66,6 +75,12 @@ const router = new Router({
       path: '/register',
       name: 'PageRegister',
       component: PageRegister,
+      meta: { onlyGuestUser: true }
+    },
+    {
+      path: '/users/:hash/activate',
+      name: 'PageActivateUser',
+      component: PageActivateUser,
       meta: { onlyGuestUser: true }
     },
     {

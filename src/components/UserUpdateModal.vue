@@ -10,7 +10,7 @@
         </header>
         <section class="modal-card-body">
             <div class="column is-6">
-            <figure class="image header-icon user-profile-image">
+            <figure class="image header-icon user-profile-image is-64x64">
               <img class="is-rounded" :src="user.avatar" />
             </figure>
           </div>

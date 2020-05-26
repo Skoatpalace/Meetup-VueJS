@@ -6,29 +6,38 @@ exports.getSecret = function(req, res) {
 }
 
 exports.getMeetups = function(req, res) {
-  const {category} = req.query || {};
-  const {location} = req.query || {}
+  const {category, location} = req.query;
+
+  // Page Setup
+  const pageSize = parseInt(req.query.pageSize) || 6;
+  const pageNum = parseInt(req.query.pageNum) || 1;
+  const skips = pageSize * (pageNum - 1)
 
   const findQuery = location ? Meetup.find({ processedLocation: { $regex: '.*' + location + '.*' } })
                              : Meetup.find({})
+
   findQuery
         .populate('category')
         .populate('joinedPeople')
-        .limit(5)
+        .skip(skips)
+        .limit(pageSize)
         .sort({'createdAt': -1})
         .exec((errors, meetups) => {
     if (errors) {
       return res.status(422).send({errors});
     }
 
-    // WARNING: requires improvement, can decrease performance
     if (category) {
       meetups = meetups.filter(meetup => {
         return meetup.category.name === category
       })
     }
 
-    return res.json(meetups);
+    Meetup.countDocuments({})
+      .then(count => {
+
+        return res.json({meetups: meetups.splice(0, pageSize), count, pageCount: count / pageSize});
+      });
   });
 }
 
@@ -81,7 +90,7 @@ exports.joinMeetup = function (req, res) {
     return Promise.all(
       [meetup.save(),
       User.updateOne({ _id: user.id }, { $push: { joinedMeetups: meetup }})])
-      .then(result => res.json({id}))
+      .then(res => res.json({id}))
       .catch(errors => res.status(422).send({errors}))
   })
 }
@@ -93,6 +102,52 @@ exports.leaveMeetup = function (req, res) {
   Promise.all(
     [Meetup.updateOne({ _id: id }, { $pull: { joinedPeople: user.id }, $inc: {joinedPeopleCount: -1}}),
      User.updateOne({ _id: user.id }, { $pull: { joinedMeetups: id }})])
-    .then(result => res.json({id}))
+    .then(res => res.json({id}))
     .catch(errors => res.status(422).send({errors}))
+}
+
+exports.updateMeetup = function (req, res) {
+  const meetupData = req.body
+  const {id} = req.params
+  const user = req.user
+  meetupData.updateAt = new Date() 
+
+  if (user.id === meetupData.meetupCreator._id) {
+    Meetup.findByIdAndUpdate(id, { $set: meetupData}, { new: true })
+    .populate('meetupCreator', 'name id avatar')
+    .populate('category')
+    .exec((errors, updatedMeetup) => {
+
+      if (errors) {
+        return res.status(422).send({errors})
+      }
+
+      return res.json(updatedMeetup)
+    })    
+  } else {
+    return res.status(401).send({errors: {message: 'Not Authorized!'}})
+  }
+}
+
+exports.deleteMeetup = function(req, res) {
+  const {id} = req.params;
+  const user = req.user;
+
+  Meetup.findById(id, (errors, meetup) => {
+    if (errors) {
+      return res.status(422).send({errors})
+    }
+
+    if (meetup.meetupCreator != user.id) {
+      return res.status(401).send({errors: {message: 'Not Authorized!'}})
+    }
+
+    meetup.remove((errors, _) => {
+      if (errors) {
+        return res.status(422).send({errors})
+      }
+
+      return res.json(meetup._id);
+    })
+  })
 }

@@ -139,8 +139,9 @@
 </template>
 
 <script>
-import { required, email, minLength, url, sameAs } from "vuelidate/lib/validators";
+import { required, email, minLength, url, sameAs } from "vuelidate/lib/validators"
 import { supportedFileType } from '@/helpers/validators'
+import { USER_REGISTERED } from '@/helpers/redirectMessages'
 export default {
   data() {
     return {
@@ -187,7 +188,7 @@ export default {
   methods: {
     register () {
       this.$store.dispatch("auth/registerUser", this.form)
-        .then(() => this.$router.push('/login'))
+        .then(() => this.$router.push({ path: '/login', query: {messageType: USER_REGISTERED.type } }))
         .catch(errorMessage => {
             this.$toasted.error(errorMessage, {
               theme: "bubble", 

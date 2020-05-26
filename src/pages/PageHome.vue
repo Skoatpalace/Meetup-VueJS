@@ -5,12 +5,16 @@
     <div v-if="pageLoader_isDataLoaded" class="container">
       <section class="section">
         <div class="m-b-lg">
-          <h1 class="title is-inline">Featured Meetups in "Location"</h1>
+          <h1 class="title is-inline">
+            Featured Meetups
+            <span v-if="ipLocation">in {{ ipLocation }}</span>
+          </h1>
           <AppDropdown />
-          <router-link 
-            v-if="user" 
-            :to="{name: 'PageMeetupCreate'}" 
-            class="button is-primary is-pulled-right m-r-sm">Create Meetups</router-link>
+          <router-link
+            v-if="user"
+            :to="{name: 'PageMeetupCreate'}"
+            class="button is-primary is-pulled-right m-r-sm"
+          >Create Meetups</router-link>
           <router-link
             :to="{name: 'PageMeetupFind'}"
             class="button is-primary is-pulled-right m-r-sm"
@@ -20,6 +24,14 @@
           <!--iterate meetups here -->
           <MeetupItem v-for="meetup in meetups" :key="meetup._id" :meetup="meetup" />
         </div>
+        <paginate
+          v-model="pagination.pageNum"
+          :page-count="pagination.pageCount"
+          :click-handler="fetchPaginationMeetups"
+          :prev-text="'Prev'"
+          :next-text="'Next'"
+          :container-class="'paginationContainer'"
+        ></paginate>
       </section>
       <section class="section">
         <div>
@@ -38,10 +50,11 @@
 
 <script>
 import _ from "lodash";
-import CategoryItem from "@/components/CategoryItem"
-import MeetupItem from "@/components/MeetupItem"
-import pageLoader from '@/mixins/pageLoader'
-import { mapActions, mapState, mapGetters } from "vuex"
+import CategoryItem from "@/components/CategoryItem";
+import MeetupItem from "@/components/MeetupItem";
+import pageLoader from "@/mixins/pageLoader";
+import { processLocation } from "@/helpers";
+import { mapActions, mapState, mapGetters } from "vuex";
 export default {
   components: {
     CategoryItem,
@@ -50,27 +63,95 @@ export default {
   mixins: [pageLoader],
   computed: {
     ...mapGetters({
-      'user': 'auth/authUser'
+      user: "auth/authUser",
+      ipLocation: "meta/location"
     }),
     ...mapState({
       meetups: state => _.orderBy(state.meetups.items, "startDate"),
-      categories: state => _.orderBy(state.categories.items, "name")
+      categories: state => _.orderBy(state.categories.items, "name"),
+      pagination: state => state.meetups.pagination
     })
   },
-  created() {
-    Promise.all([this.fetchMeetups(), this.fetchCategories()])
+  created () {
+    const { pageSize, pageNum } = this.$route.query
+
+    if (pageSize && pageNum) {
+      this.initializePagesFromQuery({ pageSize, pageNum })
+    }
+
+    Promise.all([this.handleFetchMeetups({}), this.fetchCategories()])
       .then(() => this.pageLoader_resolveData())
-      .catch((err) => {
-        console.error(err)
-        this.pageLoader_resolveData()
-      })
+      .catch(err => {
+        console.error(err);
+        this.pageLoader_resolveData();
+      });
   },
   methods: {
     ...mapActions("meetups", ["fetchMeetups"]),
-    ...mapActions("categories", ["fetchCategories"])
+    ...mapActions("categories", ["fetchCategories"]),
+    handleFetchMeetups ({ reset }) {
+      const filter = {};
+      filter['pageSize'] = this.pagination.pageSize
+      filter['pageNum'] = this.pagination.pageNum
+      return this.fetchMeetups({ filter, reset })
+        .then(_ => this.setQueryPaginationParams())
+    },
+    fetchPaginationMeetups (page) {
+      this.setPage(page)
+      this.handleFetchMeetups({ reset: false })
+    },
+    setPage (page) {
+      this.$store.commit('meetups/setPage', page)
+    },
+    setQueryPaginationParams () {
+      const { pageSize, pageNum } = this.pagination
+      this.$router.push({ query: {pageNum, pageSize} })
+    }
   }
 };
 </script>
 
-<style scoped>
+<style lang="scss">
+.paginationContainer {
+  display: inline-block;
+  padding-left: 0;
+  margin: 20px 0;
+  border-radius: 4px;
+
+  > li {
+    display: inline;
+    font-size: 18px;
+
+    > a {
+      position: relative;
+      float: left;
+      padding: 6px 12px;
+      margin-left: -1px;
+      line-height: 1.42857143;
+      color: #00d1b2;
+      text-decoration: none;
+      background-color: #fff;
+      border: 1px solid #ddd;
+    }
+
+    &.active {
+      > a {
+        z-index: 2;
+        color: #fff;
+        cursor: default;
+        background-color: #00d1b2;
+        border-color: #00d1b2;
+      }
+    }
+
+    &.disabled {
+      > a {
+        color: #777;
+        cursor: not-allowed;
+        background-color: #fff;
+        border-color: #ddd;
+      }
+    }
+  }
+}
 </style>

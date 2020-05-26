@@ -3,7 +3,61 @@ const Meetup = require('../models/meetups');
 const Thread = require('../models/threads');
 const Post = require('../models/posts');
 const Category = require('../models/categories');
+const ConfirmationHash = require('../models/confirmation-hash');
+const config = require('../config')
 const passport = require('passport');
+const nodemailer = require('nodemailer');
+
+function sendConfirmationEmail({ toUser, hash }, callback) {
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: config.GOOGLE_USER,
+      pass: config.GOOGLE_PASSWORD
+    }
+  })
+
+  const message = {
+    from: config.GOOGLE_USER,
+    to: toUser.email,
+    //to: config.GOOGLE_USER,
+    subject: 'Internal Meetup - Activate Account',
+    html: `
+    <h3> Hello ${toUser.name} </h3>
+    <p>Thank you for registering into Vue Meetuper. Much Appreciated! Just one last step is laying ahead of you...</p>
+    <p>To activate your account please follow this link: <a target="_" href="${config.DOMAIN}/users/${hash}/activate"> activate </a></p>
+    <p>Cheers</p>
+    <p>Your Vue Meetuper Team</p>
+  `
+  }
+
+  transporter.sendMail(message, function(err, info) {
+    if (err) {
+      callback(err, null)
+    } else {
+      callback(null, info)
+    }
+  })
+}
+
+exports.activateUser = function (req, res) {
+  const { hash } = req.params
+  ConfirmationHash
+    .findById(hash)
+    .populate('user')
+    .exec((errors, foundHash) => {
+      if (errors) {
+        return res.status(422).send({errors});
+      }
+      User.findByIdAndUpdate(foundHash.user.id, { $set: { active: true } }, { new: true }, (errors, updatedUser) => {
+        if (errors) {
+          return res.status(422).send({errors});
+        }
+        foundHash.remove(() => {})
+        return res.json(updatedUser)
+      })
+    })
+}
 
 exports.getUsers = function(req, res) {
   User.find({})
@@ -62,11 +116,17 @@ exports.register = function(req, res) {
   const user = new User(registerData);
 
   return user.save((errors, savedUser) => {
-    if (errors) {
-      return res.status(422).json({errors})
-    }
+    if (errors) {return res.status(422).json({errors})}
+    const hash = new ConfirmationHash({ user: savedUser })
+    
+    hash.save((errors, createdHash) => {
+      if (errors) {return res.status(422).json({errors})}
+      sendConfirmationEmail({ toUser: savedUser, hash: hash.id }, (errors, info) => {
+        if (errors) {return res.status(422).json({errors})}
+        return res.json(savedUser)
+      })
+    })
 
-    return res.json(savedUser)
   })
 }
 
@@ -97,15 +157,13 @@ exports.login = function (req, res, next) {
     }
 
     if (passportUser) {
-      // Only For Session Auth!!!
-      // req.login(passportUser, function (err) {
-      //   if (err) { next(err); }
-
-      //   return res.json(passportUser)
-      // });
-
-      return res.json(passportUser.toAuthJSON())
-
+      if (passportUser.active) {
+        return res.json(passportUser.toAuthJSON())
+      }else {
+        return res.status(422).send({errors: {
+          'message': 'Please check your email in order to activate account'
+        }})
+      }
     } else {
       return res.status(422).send({errors: {
         'message': 'Invalid password or email'
@@ -152,7 +210,7 @@ function fetchMeetupsByUserQuery (userId) {
       Category.populate(results[0].meetups, {path: 'category'})
       .then(pMeetups => {
         if (pMeetups && pMeetups.length > 0) {
-          resolve({data: pMeetups, count: results[0].meetupsCount[0].count});
+          resolve({data: pMeetups, count: results[0].meetupsCount[0].countDocuments});
         } else {
           resolve({data: results[0].meetups, count: 0})
         }
@@ -179,7 +237,7 @@ function fetchThreadsByUserQuery (userId) {
   .then(results => {
     const threads = results[0].threads;
     if (threads && threads.length > 0) {
-      return {data: threads, count: results[0].threadsCount[0].count}
+      return {data: threads, count: results[0].threadsCount[0].countDocuments}
     }
 
     return {data: threads, count: 0}
@@ -204,7 +262,7 @@ function fetchPostByUserQuery (userId) {
   .then(results => {
     const posts = results[0].posts;
     if (posts && posts.length > 0) {
-      return {data: results[0].posts, count: results[0].postsCount[0].count}
+      return {data: results[0].posts, count: results[0].postsCount[0].countDocuments}
     }
 
     return {data: results[0].posts, count: 0}

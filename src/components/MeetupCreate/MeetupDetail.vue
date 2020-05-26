@@ -23,11 +23,11 @@
     </div>
     <div class="field">
       <label class="title m-b-sm">From</label>
-      <vue-timepicker @change="changeTime($event, 'timeFrom')" :minute-interval="5" />
+      <vue-timepicker @change="changeTime($event, 'timeFrom')" :minute-interval="10" />
     </div>
     <div class="field">
       <label class="title m-b-sm">To</label>
-      <vue-timepicker @change="changeTime($event, 'timeTo')" :minute-interval="5" />
+      <vue-timepicker @change="changeTime($event, 'timeTo')" :minute-interval="10" />
     </div>
     <div class="field">
       <label class="title m-b-sm">Please Choose the Category.</label>

@@ -75,8 +75,9 @@
 </template>
 
 <script>
-import _ from "lodash"
+import _ from 'lodash'
 import pageLoader from '@/mixins/pageLoader'
+import { processLocation } from '@/helpers'
 export default {
   props: {
     category: {
@@ -103,10 +104,7 @@ export default {
   methods: {
     fetchMeetups () {
       if (this.searchedLocation) {
-        this.filter["location"] = this.searchedLocation
-          .toLowerCase()
-          .replace(/[\s,]+/g, "")
-          .trim();
+        this.filter["location"] = processLocation(this.searchedLocation)
       }
 
       if (this.category) {

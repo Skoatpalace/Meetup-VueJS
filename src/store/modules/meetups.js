@@ -8,7 +8,13 @@ export default {
     //In state we are keeping  our data we are sharing whith our components
     state: {
         items: [],
-        item: {}
+        item: {},
+        pagination: {
+            count: 0,
+            pageCount: 0,
+            pageSize: 6,
+            pageNum: 1
+        }
     },
     //Getters are like computed properties. Simple functions to get a state
     getters: {
@@ -17,15 +23,18 @@ export default {
     //Actions are like methods in vue components. They should  not mutate the state.
     //Very good spot to fetch data. Action call usualy should resolve into data.
     actions: {
-        fetchMeetups ({ state, commit }, options = {}) {
-            commit('setItems', { resource: 'meetups', items: [] }, { root: true })
+        fetchMeetups ({ state, commit }, options = {reset: true}) {
+            if (options.reset) {
+                commit('setItems', { resource: 'meetups', items: [] }, { root: true })
+            }
 
             const url = applyFilters('/api/v1/meetups', options.filter)
 
             return axios.get(url)
                 .then(res => {
-                    const meetups = res.data
+                    const { meetups, count, pageCount } = res.data
                     commit('setItems', { resource: 'meetups', items: meetups }, { root: true })
+                    commit('setPagination', { count, pageCount })
                     return state.items
                 });
         },
@@ -69,12 +78,45 @@ export default {
                     joinedPeople.splice(index, 1)
                     commit('addUsersToMeetup', joinedPeople)
                 })
+        },
+        updateMeetup ({ commit, state }, meetupData) {
+            meetupData.processedLocation = meetupData.location.toLowerCase().replace(/[\s,]+/g,'').trim()
+            return axiosInstance.patch(`/api/v1/meetups/${meetupData._id}`, meetupData)
+                .then(res => {
+                    const updatedMeetup = res.data
+                    commit('mergeMeetup', updatedMeetup)
+                    return state.item
+                })
+        },
+        deleteMeetup (_, meetupId) {
+            return axiosInstance.delete(`/api/v1/meetups/${meetupId}`)
+                .then(res => {
+                    const meetupId = res.data
+                    return meetupId
+                })
+        },
+        initializePagesFromQuery ({ commit }, { pageSize, pageNum }) {
+            commit('setPage', pageNum)
+            commit('setPageSize', pageSize)
         }
     },
     //Simple functions to mutate a state
     mutations: {
         addUsersToMeetup (state, joinedPeople) {
             return Vue.set(state.item, 'joinedPeople', joinedPeople)
+        },
+        mergeMeetup (state, updatedMeetup) {
+            state.item = { ...state.item, ...updatedMeetup }
+        },
+        setPagination (state, { count, pageCount }) {
+            Vue.set(state.pagination, 'count', count)
+            Vue.set(state.pagination, 'pageCount', pageCount)
+        },
+        setPage (state, page) {
+            Vue.set(state.pagination, 'pageNum', page)
+        },
+        setPageSize (state, pageSize) {
+            Vue.set(state.pagination, 'pageSize', pageSize)
         }
     }
 }

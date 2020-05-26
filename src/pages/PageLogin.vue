@@ -38,8 +38,14 @@
                     autocomplete="current-password"
                   />
                   <div v-if="$v.form.password.$error" class="form-error">
-                    <span v-if="!$v.form.password.required" class="help is-danger">Password is required</span>
-                    <span v-if="!$v.form.password.minLength" class="help is-danger">8 characters minimum</span>
+                    <span
+                      v-if="!$v.form.password.required"
+                      class="help is-danger"
+                    >Password is required</span>
+                    <span
+                      v-if="!$v.form.password.minLength"
+                      class="help is-danger"
+                    >8 characters minimum</span>
                   </div>
                 </div>
               </div>
@@ -62,9 +68,10 @@
 </template>
 
 <script>
-import { required, email, minLength } from "vuelidate/lib/validators";
+import { required, email, minLength } from "vuelidate/lib/validators"
+import { REDIRECT_MESSAGES } from '@/helpers/redirectMessages'
 export default {
-  data () {
+  data() {
     return {
       form: {
         email: null,
@@ -85,25 +92,38 @@ export default {
     }
   },
   computed: {
-      isFormInvalid () {
-        return this.$v.form.$invalid
-      }
-    },
-    methods: {
-      login () {
-        this.$v.form.$touch()
-        this.$store.dispatch('auth/loginWithEmailAndPassword', this.form)
-          .then(() => this.$router.push('/'))
-          .catch((errorMessage) => {
-            this.$toasted.error(errorMessage, {
-              theme: "bubble", 
-              position: "top-center", 
-              duration : 5000
-              })
+    isFormInvalid() {
+      return this.$v.form.$invalid;
+    }
+  },
+  created () {
+    const { messageType } = this.$route.query
+    if (!messageType) return
+
+    const { message } = REDIRECT_MESSAGES(messageType)
+    this.$toasted.success(message, {
+            theme: "bubble",
+            position: "top-center",
+            duration: 5000
           })
-      }
+    this.$router.push({ query: '' })
+  },
+  methods: {
+    login() {
+      this.$v.form.$touch();
+      this.$store
+        .dispatch("auth/loginWithEmailAndPassword", this.form)
+        .then(() => this.$router.push("/"))
+        .catch(errorMessage => {
+          this.$toasted.error(errorMessage, {
+            theme: "bubble",
+            position: "top-center",
+            duration: 5000
+          });
+        });
     }
   }
+};
 </script>
 
 
